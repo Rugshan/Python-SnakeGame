@@ -4,13 +4,19 @@ from food import Food
 from scoreboard import ScoreBoard
 import time
 
+# Constants
 GAME_SPEED = 0.07
 is_game_on = True
 
-screen = None
-snake = None
-food = None
-scoreboard = None
+# Setup and Variables
+screen = Screen()
+snake = Snake()
+food = Food()
+scoreboard = ScoreBoard()
+screen.setup(width=600, height=600)
+screen.bgcolor("black")
+screen.title("Snake Game")
+screen.tracer(0)
 
 
 def pause_game():
@@ -22,34 +28,15 @@ def pause_game():
 def restart_game():
     global is_game_on
     if not is_game_on:
-        global screen, snake, food, scoreboard
-        del snake, food, scoreboard
+        global screen, food, snake, scoreboard
+        del snake, scoreboard
         screen.clearscreen()
         setup_game()
+
         is_game_on = True
 
-
-def end_game():
-    global is_game_on
-    is_game_on = False
-    scoreboard.game_over()
-
-
-def eat_food():
-    food.refresh()
-    scoreboard.increment_score()
-
-
-def setup_game():
-    global screen, snake, food, scoreboard
-    screen = Screen()
-    snake = Snake()
-    food = Food()
-    scoreboard = ScoreBoard()
-    screen.setup(width=600, height=600)
-    screen.bgcolor("black")
-    screen.title("Snake Game")
-    screen.tracer(0)
+    scoreboard.reset()
+    snake.reset_position()
     screen.listen()
     screen.onkey(snake.up, "Up")
     screen.onkey(snake.down, "Down")
@@ -58,7 +45,12 @@ def setup_game():
     screen.onkey(pause_game, "p")
 
 
-setup_game()
+def eat_food():
+    food.refresh()
+    scoreboard.increment_score()
+
+
+restart_game()
 
 while is_game_on:
 
@@ -71,7 +63,8 @@ while is_game_on:
 
     # Detect collision with wall or tail.
     if snake.detect_wall_collision() or snake.detect_tail_collision():
-        end_game()
+        food.refresh()
+        restart_game()
 
     # Detect collision with food.
     if snake.detect_food_collision(food):
